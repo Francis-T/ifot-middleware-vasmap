@@ -80,3 +80,4 @@ def add_exec_time_info(unique_id, operation, time_start, time_end):
   r.lpush("{}_{}".format(EXEC_TIME_INFO, unique_id), json.dumps(log_obj))
 
   return True
+

@@ -4,7 +4,7 @@ import redis
 from rq import Queue, Connection
 from rq.registry import StartedJobRegistry, FinishedJobRegistry
 
-from .Defs import *
+from ...common.defs import *
 
 def get_task_status(queue, task_id, app_info):
   task = None
@@ -221,5 +221,4 @@ def get_all_exec_time_logs():
     logs[uid] = get_exec_time_log(uid)
 
   return logs
-
 

@@ -1,11 +1,17 @@
 import redis
-from rq import Queue, Connection
-from ..tools import pandas_tools, general_tools, query_tools, redis_tools, Defs
-import multiprocessing
-from flask import Flask, Blueprint, request, jsonify, current_app
-import pandas as pd
 import os
 import time
+import pandas as pd
+import multiprocessing
+import json
+
+from rq import Queue, Connection
+from flask import Flask, Blueprint, request, jsonify, current_app
+
+from ...common.defs import *
+from ...common import pandas_tools, general_tools, query_tools, redis_tools
+from ..main import metas
+from ..services import generic, vas
 
 api_blueprint = Blueprint('api', __name__,)
 
@@ -35,8 +41,8 @@ def iris_dist_process():
   try:
     if filename and general_tools.allowed_file(filename):
       unique_id = query_tools.initialize_query(nodes,
-                                               count_suffix=Defs.TASK_COUNT,
-                                               done_count_suffix=Defs.DONE_TASK_COUNT)
+                                               count_suffix=TASK_COUNT,
+                                               done_count_suffix=DONE_TASK_COUNT)
 
       with open(os.path.join(current_app.instance_path, 'htmlfi', filename)) as f:
         df = pd.read_csv(f, header=None)
@@ -93,3 +99,56 @@ def iris_dist_process():
   except IOError:
     pass
   return "Unable to read file"
+
+@api_blueprint.route('/get_exec_times', methods=['GET', 'POST'])
+def get_exec_times():
+  data = {}
+  # Get the execution timing info
+  data['exec_time_logs'] = metas.get_all_exec_time_logs()
+  return jsonify(data)
+
+@api_blueprint.route('/get_exec_time/<unique_id>', methods=['GET', 'POST'])
+def get_exec_time(unique_id):
+  data = {}
+  data['exec_time_logs'] = { unique_id : metas.get_exec_time_log(unique_id) }
+  return jsonify(data)
+
+@api_blueprint.route('/vas/get_average_speeds', methods=['GET'])
+def get_average_speeds():
+  return forward_request(vas.get_average_speeds, request)
+
+@api_blueprint.route('/vas/request_rsu_list', methods=['GET'])
+def request_rsu_list():
+  return jsonify(vas.get_rsu_list())
+
+@api_blueprint.route('/vas/get_last_task_graph', methods=['GET'])
+def request_last_task_graph():
+    task_graph = None
+    with open('vas_task_graph.json', 'r') as task_graph_file:
+        task_graph = json.load(task_graph_file)
+
+    #return send_from_directory('.', 'vas_task_graph.json')
+    return jsonify(task_graph), 200
+
+@api_blueprint.route('/run_service', methods=['GET'])
+def run_service():
+    req         = request.get_json(force=True)
+    params      = req['params']
+    task_graph  = req['task_graph']
+    return call_service(generic.run_task_graph, params, task_graph)
+
+##
+##  IFoT Middleware Service Management Utility Functions
+##
+def call_service(service_func, params, task_graph):
+  # Execute the request
+  api_resp = service_func(params, task_graph)
+  return jsonify(api_resp), 202
+
+def forward_request(service_func, request):
+  # Execute the request
+  api_resp = service_func(request)
+  return jsonify(api_resp), 202
+
+
+

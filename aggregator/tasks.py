@@ -19,12 +19,13 @@ import csv
 import json
 import paho.mqtt.client as mqtt
 
-from tools import general_tools, Defs
+from common.defs import *
+from common import redis_tools, metas
 import config
 
 def aggregate_iris(unique_id):
   print(unique_id)
-  aggregation_start_time = general_tools.get_redis_server_time()
+  aggregation_start_time = redis_tools.get_redis_server_time()
   tic = time.clock()
   job = get_current_job()
   job.meta['handled_by'] = socket.gethostname()
@@ -35,13 +36,13 @@ def aggregate_iris(unique_id):
                                        port=config.REDIS['port'], 
                                        password="", decode_responses=False)
 
-  task_count = general_tools.getRedisV(redis_connection, unique_id + Defs.TASK_COUNT)
-  done_task_count = general_tools.getRedisV(redis_connection, unique_id + Defs.DONE_TASK_COUNT)
-  status = general_tools.getRedisV(redis_connection, unique_id).strip().decode('utf-8')
+  task_count = redis_tools.getRedisV(redis_connection, unique_id + TASK_COUNT)
+  done_task_count = redis_tools.getRedisV(redis_connection, unique_id + DONE_TASK_COUNT)
+  status = redis_tools.getRedisV(redis_connection, unique_id).strip().decode('utf-8')
 
   if status == "finished":
     with Connection(redis_connection):
-      node_task_id_list = general_tools.getListK(redis_connection, unique_id + Defs.TASK_SUFFIX)
+      node_task_id_list = redis_tools.getListK(redis_connection, unique_id + TASK_SUFFIX)
       node_list_string = [node_task_id.strip().decode('utf-8') for node_task_id in node_task_id_list]
 
       print("Task IDs: ", node_list_string)
@@ -73,7 +74,7 @@ def aggregate_iris(unique_id):
       job.save_meta()
 
       # Log execution time info to redis
-      general_tools.add_exec_time_info(unique_id, "aggregation", aggregation_start_time, general_tools.get_redis_server_time())
+      metas.add_exec_time_info(unique_id, "aggregation", aggregation_start_time, redis_tools.get_redis_server_time())
       print('Output:', response)
       #TODO: Can i instantiate this in worker.py and call it here?
       client = mqtt.Client("SB")

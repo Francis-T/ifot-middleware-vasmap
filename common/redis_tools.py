@@ -15,6 +15,21 @@ def getRedisV(r, K):
   else:
     return "Empty"
 
+def incrRedisKV(r, K):
+  try:
+    r.incr(K)
+    return True
+  except:
+    return False
+
+
+def getListK(r, K):
+  output = r.lrange(K, 0, -1)
+  if output is not None:
+    return output
+  else:
+    return "Empty"
+
 def appendToListK(r, K, V):
   try:
     r.rpush(K, V)

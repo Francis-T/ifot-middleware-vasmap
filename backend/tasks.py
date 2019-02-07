@@ -6,7 +6,9 @@ import pandas as pd
 from sklearn import svm
 from sklearn.externals import joblib
 
-from tools import redis_tools, general_tools, Defs
+from common.defs import *
+from common import redis_tools
+from common import metas as meta_tools
 import config
 import json
 
@@ -26,7 +28,7 @@ def classify_iris(unique_ID, sequence_ID, redis_df_key):
                                        port=config.REDIS['port'],
                                        password="", decode_responses=False)
 
-  redis_tools.appendToListK(r, unique_ID + Defs.TASK_SUFFIX, job.id)
+  redis_tools.appendToListK(r, unique_ID + TASK_SUFFIX, job.id)
 
   df = pd.read_msgpack(r.get(redis_df_key))
   print(df.shape)
@@ -47,9 +49,9 @@ def classify_iris(unique_ID, sequence_ID, redis_df_key):
   job.meta['progress'] = toc - tic
   job.save_meta()
 
-  redis_tools.incrRedisKV(r, unique_ID + Defs.DONE_TASK_COUNT)
-  task_count = redis_tools.getRedisV(r, unique_ID + Defs.TASK_COUNT).strip().decode('utf-8')
-  done_task_count = redis_tools.getRedisV(r, unique_ID + Defs.DONE_TASK_COUNT).strip().decode('utf-8')
+  redis_tools.incrRedisKV(r, unique_ID + DONE_TASK_COUNT)
+  task_count = redis_tools.getRedisV(r, unique_ID + TASK_COUNT).strip().decode('utf-8')
+  done_task_count = redis_tools.getRedisV(r, unique_ID + DONE_TASK_COUNT).strip().decode('utf-8')
 
   metas = {
     'unique_id' : unique_ID,
@@ -67,7 +69,7 @@ def classify_iris(unique_ID, sequence_ID, redis_df_key):
   else:
     print('still not done processing')
 
-  general_tools.add_exec_time_info(unique_ID, "processing-{}".format(sequence_ID), process_start_time, redis_tools.get_redis_server_time())
+  meta_tools.add_exec_time_info(unique_ID, "processing-{}".format(sequence_ID), process_start_time, redis_tools.get_redis_server_time())
 
   response = { 'sequence_ID': sequence_ID, 'metas' : metas, 'output': results, 'outsize': len(results)}
   print('Backend: ', response)

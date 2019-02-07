@@ -3,17 +3,19 @@ import datetime
 import requests
 from dateutil import tz
 
-from .Defs import *
+from .defs import *
 from .redis_tools import *
 
 #TODO: Probably should have redis connection as input param
-def initialize_query(total, count_suffix=NODE_COUNT, done_count_suffix=DONE_NODE_COUNT):
-  r = redis.StrictRedis(host="redis", port=6380, password="", decode_responses=True)
+def initialize_query(total, count_suffix=NODE_COUNT, done_count_suffix=DONE_NODE_COUNT, use_count=True):
+  r = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, password="", decode_responses=True)
 
   unique_id = generate_unique_ID()
   setRedisKV(r, unique_id, 'ongoing')
-  setRedisKV(r, unique_id + count_suffix, total)
-  setRedisKV(r, unique_id + done_count_suffix, 0)
+
+  if use_count:
+      setRedisKV(r, unique_id + count_suffix, total)
+      setRedisKV(r, unique_id + done_count_suffix, 0)
 
   return unique_id
 
