@@ -15,6 +15,9 @@ class BaseConfig(object):
     REDIS_PORT = 6380
     MQTT_BROKER_URL = 'mosquitto'
     MQTT_BROKER_PORT = 1883
+    MQTT_KEEPALIVE = 0
+    MQTT_TLS_ENABLED = False
+    SECRET_KEY = "a secret"
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration."""

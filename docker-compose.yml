@@ -8,13 +8,17 @@ services:
       - ./frontend:/usr/src/app
       - ./common:/usr/src/app/project/common
     environment:
-      - FLASK_DEBUG=0
       - FLASK_ENV=development
       - PYTHONUNBUFFERED=1
       - APP_SETTINGS=project.server.config.DevelopmentConfig
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
-    command: gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5011 wsgi:app --no-sendfile
+    command: python wsgi.py
+    #command: gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5011 wsgi:app --no-sendfile
     depends_on:
       - redis
       - mosquitto
@@ -31,6 +35,10 @@ services:
       - ./backend_data/service_worker_0000:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -50,6 +58,10 @@ services:
       - ./backend_data/service_worker_0001:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -69,6 +81,10 @@ services:
       - ./backend_data/service_worker_0002:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -88,6 +104,10 @@ services:
       - ./backend_data/service_worker_0003:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -107,6 +127,10 @@ services:
       - ./backend_data/service_worker_0004:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -126,6 +150,10 @@ services:
       - ./backend_data/service_worker_0005:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -145,6 +173,10 @@ services:
       - ./backend_data/service_worker_0006:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -164,6 +196,10 @@ services:
       - ./backend_data/service_worker_0007:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -183,6 +219,10 @@ services:
       - ./backend_data/service_worker_0008:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -202,6 +242,1252 @@ services:
       - ./backend_data/service_worker_0009:/usr/src/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0010:
+    build: ./backend
+    ports:
+      - "5160:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0010:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0011:
+    build: ./backend
+    ports:
+      - "5161:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0011:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0012:
+    build: ./backend
+    ports:
+      - "5162:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0012:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0013:
+    build: ./backend
+    ports:
+      - "5163:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0013:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0014:
+    build: ./backend
+    ports:
+      - "5164:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0014:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0015:
+    build: ./backend
+    ports:
+      - "5165:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0015:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0016:
+    build: ./backend
+    ports:
+      - "5166:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0016:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0017:
+    build: ./backend
+    ports:
+      - "5167:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0017:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0018:
+    build: ./backend
+    ports:
+      - "5168:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0018:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0019:
+    build: ./backend
+    ports:
+      - "5169:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0019:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0020:
+    build: ./backend
+    ports:
+      - "5170:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0020:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0021:
+    build: ./backend
+    ports:
+      - "5171:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0021:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0022:
+    build: ./backend
+    ports:
+      - "5172:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0022:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0023:
+    build: ./backend
+    ports:
+      - "5173:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0023:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0024:
+    build: ./backend
+    ports:
+      - "5174:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0024:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0025:
+    build: ./backend
+    ports:
+      - "5175:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0025:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0026:
+    build: ./backend
+    ports:
+      - "5176:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0026:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0027:
+    build: ./backend
+    ports:
+      - "5177:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0027:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0028:
+    build: ./backend
+    ports:
+      - "5178:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0028:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0029:
+    build: ./backend
+    ports:
+      - "5179:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0029:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0030:
+    build: ./backend
+    ports:
+      - "5180:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0030:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0031:
+    build: ./backend
+    ports:
+      - "5181:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0031:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0032:
+    build: ./backend
+    ports:
+      - "5182:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0032:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0033:
+    build: ./backend
+    ports:
+      - "5183:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0033:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0034:
+    build: ./backend
+    ports:
+      - "5184:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0034:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0035:
+    build: ./backend
+    ports:
+      - "5185:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0035:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0036:
+    build: ./backend
+    ports:
+      - "5186:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0036:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0037:
+    build: ./backend
+    ports:
+      - "5187:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0037:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0038:
+    build: ./backend
+    ports:
+      - "5188:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0038:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0039:
+    build: ./backend
+    ports:
+      - "5189:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0039:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0040:
+    build: ./backend
+    ports:
+      - "5190:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0040:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0041:
+    build: ./backend
+    ports:
+      - "5191:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0041:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0042:
+    build: ./backend
+    ports:
+      - "5192:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0042:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0043:
+    build: ./backend
+    ports:
+      - "5193:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0043:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0044:
+    build: ./backend
+    ports:
+      - "5194:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0044:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0045:
+    build: ./backend
+    ports:
+      - "5195:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0045:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0046:
+    build: ./backend
+    ports:
+      - "5196:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0046:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0047:
+    build: ./backend
+    ports:
+      - "5197:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0047:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0048:
+    build: ./backend
+    ports:
+      - "5198:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0048:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0049:
+    build: ./backend
+    ports:
+      - "5199:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0049:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0050:
+    build: ./backend
+    ports:
+      - "5200:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0050:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0051:
+    build: ./backend
+    ports:
+      - "5201:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0051:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0052:
+    build: ./backend
+    ports:
+      - "5202:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0052:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0053:
+    build: ./backend
+    ports:
+      - "5203:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0053:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0054:
+    build: ./backend
+    ports:
+      - "5204:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0054:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0055:
+    build: ./backend
+    ports:
+      - "5205:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0055:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0056:
+    build: ./backend
+    ports:
+      - "5206:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0056:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0057:
+    build: ./backend
+    ports:
+      - "5207:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0057:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0058:
+    build: ./backend
+    ports:
+      - "5208:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0058:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0059:
+    build: ./backend
+    ports:
+      - "5209:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0059:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0060:
+    build: ./backend
+    ports:
+      - "5210:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0060:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0061:
+    build: ./backend
+    ports:
+      - "5211:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0061:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0062:
+    build: ./backend
+    ports:
+      - "5212:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0062:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380
+    command: python3 worker.py
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: any
+
+  service_worker_0063:
+    build: ./backend
+    ports:
+      - "5213:5012"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./common:/usr/src/app/common
+      - ./backend_data/service_worker_0063:/usr/src/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     command: python3 worker.py
@@ -223,6 +1509,10 @@ services:
       - ./common:/usr/src/app/common
     environment:
       - PYTHONUNBUFFERED=1
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_HOST=influxdb
+      - INFLUX_PORT=8086
       - REDIS_HOST=redis
       - REDIS_PORT=6380
     depends_on:
@@ -240,6 +1530,15 @@ services:
       - "6380"
     command: redis-server --port 6380
     restart: always
+
+  redis_dashboard:
+    build: ./redis_dashboard
+    #image: ifot/r_dashboard
+    image: 127.0.0.1:5000/nuc-ifot-dashboard
+    container_name: redis_dashboard
+    ports:
+      - "9181:9181"
+    command: rq-dashboard -H redis -P 6380
 
   mosquitto:
     image: eclipse-mosquitto

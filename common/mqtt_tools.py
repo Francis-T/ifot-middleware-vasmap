@@ -1,8 +1,10 @@
 import json
 import paho.mqtt.client as mqtt
 
+from .defs import *
+
 class MqttLog():
-  def __init__(self, origin_id, task_id, tags=['default'], host='163.221.68.233', port=1883):
+  def __init__(self, origin_id, task_id, tags=['default'], host=MQTT_HOST, port=MQTT_PORT):
     self.origin_id = origin_id
     self.task_id = task_id
     self.tag_list = tags
@@ -18,6 +20,7 @@ class MqttLog():
   def get_client(self):
     if self.client == None:
       self.client = mqtt.Client(str(self.origin_id))
+      print("Connecting to {}:{}".format(self.host, self.port))
       self.client.connect(self.host, port=self.port)
 
     return self.client

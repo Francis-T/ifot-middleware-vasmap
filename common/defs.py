@@ -11,8 +11,14 @@ TASK_SUFFIX     = '_task'
 NANO_SEC_ADJUSTMENT = 1000000000
 EXPECTED_TIME_RANGE = NANO_SEC_ADJUSTMENT ** 2
 
+MQTT_HOST           = os.environ['MQTT_HOST']
+MQTT_PORT           = int(os.environ['MQTT_PORT'])
+
+INFLUX_HOST           = os.environ['INFLUX_HOST']
+INFLUX_PORT           = int(os.environ['INFLUX_PORT'])
+
 REDIS_HOST            = os.environ['REDIS_HOST']
-REDIS_PORT            = os.environ['REDIS_PORT']
+REDIS_PORT            = int(os.environ['REDIS_PORT'])
 REDIS_URL             = 'redis://{}:{}/0'.format(REDIS_HOST, REDIS_PORT)
 R_TASKS_LIST          = "{}.tasks"
 R_TASK_INFO           = "{}.task.{}"

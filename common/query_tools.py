@@ -24,8 +24,8 @@ def query_influx_db(start, end, fields="*",
                                 influx_db='IFoT-GW2',
                                 influx_ret_policy='autogen',
                                 influx_meas='IFoT-GW2-Meas',
-                                host='163.221.68.191',
-                                port='8086'):
+                                host=INFLUX_HOST,
+                                port=INFLUX_PORT):
 
     # Build the filter clause
     where = ""

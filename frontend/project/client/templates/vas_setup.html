@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>VAS MAP Selector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    socket.on('connect', function() {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+
+    socket.on('status', function(message) {
+      let data = message['data']
+      document.getElementById("Status").innerHTML = data;
+    })
+
+    function populate_js(form) {
+      var values = {};
+      $.each($("form").serializeArray(), function (i, field) {
+          values[field.name] = field.value;
+      });
+
+      console.log(values['rows_of_data']);
+      rows = values['rows_of_data'];
+      socket.emit('function', {'data': 'populate', 'number_of_rows': rows});
+    }
+
+    // $('#populate_form').submit(function () {
+    //   var values = {};
+    //   $.each($("#populate_form").serializeArray(), function (i, field) {
+    //       console.log(field.value);
+    //       values[field.name] = field.value;
+    //   });
+
+    //   console.log(values['rows_of_data']);
+    //   rows = values['rows_of_data'];
+    //   socket.emit('function', {'data': 'populate', 'number_of_rows': rows});
+    // });
+
+    // var values = {};
+    // $.each($('#populate_form').serializeArray(), function(i, field) {
+    //     values[field.name] = field.value;
+    //     console.log(field.value);
+    // });
+    </script>
+
+  </head>
+  <body>
+    <div class="container">
+      <div class="row"><h3>Vehicle Simulation Demo</h3></div>
+      <div class="row border mb-3 p-3">
+        <div class="col-sm-4">
+          <div class="row"><h4>Setup</h4></div>
+          <div class="row ml-1">
+            {{ form.csrf_token }}
+            <form method="POST" action="{{ url_for('main.vas_setup') }}">
+              {{ form.number_of_workers.label }} (1 - {{rsu_count}}) {{ form.number_of_workers }}
+              <br>
+              {{ form.number_of_masters.label }} (1 - {{rsu_count}}) {{ form.number_of_masters }}
+              <br>
+              {{ form.hidden_tag() }}
+              <p><input name="setup" type=submit value="Setup">
+            </form>
+          </div>
+          <div class="row"><h4>Populate InfluxDBs</h4></div>
+          <div class="row ml-1">
+            {% if rsu_count == 0 %}
+            <h6 class="text-danger">Warning: No RSU data available. Please populate the DB.</h6>
+            {% endif %}
+            <h5>Status: <div id="Status"></div></h5>
+          </div>
+          <div class="row ml-1">
+            {{ populate.csrf_token }}
+            <!-- <form method="POST" action="{{ url_for('main.vas_setup') }}"> -->
+            <form onsubmit="return populate_js(this);">
+            <!-- <form id="populate_form"> -->
+              {{ populate.rows_of_data.label }} {{ populate.rows_of_data }}
+              {{ populate.hidden_tag() }}
+              <p><input name="populate" type=submit value="Populate">
+            </form>
+          </div>
+        </div>
+
+        <div class="col-sm-8">
+          <div class="row"><h4>Simulate</h4></div>
+          {% if json_rsu_list %}
+          <form method="POST" action="{{ url_for('main.vas_simulate') }}">
+            <input name="rsu_cluster_data" type="hidden" value="{{ json_rsu_list }}">
+            <input type="submit" value="Simulate">
+          </form>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if master_rsu_list %}
+      <div class="row border mb-3 p-3">
+        <div class="col-sm-12">
+          <div class="row rsu-list-pane"><h4>RSU List</h4></div>
+          <div class="row rsu-list-pane ml-1">
+            {% for inner_rsu_list in master_rsu_list %}
+            {% for master_rsu, rsu_list in inner_rsu_list.items() %}
+            <div class="col-sm-3 mb-3">
+              <h5>{{ master_rsu }}</h5>
+              <table>
+                <thead>
+                  <th>RSU ID</th>
+                  <th>Lon</th>
+                  <th>Lat</th>
+                </thead>
+                <tbody>
+                  {% for rsu in rsu_list %}
+                  <tr>
+                    <td>{{ rsu.rsu_id }}</td>
+                    <td>{{ "{:5.2f}".format(rsu.lon) }}</td>
+                    <td>{{ "{:5.2f}".format(rsu.lat) }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>   
+
