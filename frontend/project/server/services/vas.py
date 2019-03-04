@@ -15,12 +15,12 @@ from ...common import redis_tools, query_tools
 ##    S0001: Main Service Functions
 ###
 def get_average_speeds(request, unique_id=None):
-  print("Received")
   # Log the time that the query was received
   query_received_time = query_tools.get_current_time()
   tic = time.perf_counter()
 
   # Set up the task_parameters from the request
+  delay_profile = json.loads(request.form['delay_profile'])
   params = {
       'start_time'  : int(request.form['start_time']),
       'end_time'    : int(request.form['end_time']),
@@ -30,6 +30,18 @@ def get_average_speeds(request, unique_id=None):
         'port'          : request.form['port'],
         'ret_policy'    : request.form['db_ret_policy'],
         'meas'          : request.form['db_meas'],
+      },
+      'delay_profile' : {
+          'tx_rate'     : { 'gateway' : delay_profile['gateway_tx_rate'],
+                            'cluster' : delay_profile['cluster_tx_rate'], },
+          'prop_speed'  : { 'gateway' : delay_profile['gateway_prop_speed'],
+                            'cluster' : delay_profile['cluster_prop_speed'], },
+          'link_length' : { 'gateway' : delay_profile['gateway_link_length'],
+                            'cluster' : delay_profile['cluster_link_length'], },
+          'proc_delay'  : { 'gateway' : delay_profile['gateway_proc_delay'],
+                            'cluster' : delay_profile['cluster_proc_delay'], },
+          'queue_delay' : { 'gateway' : delay_profile['gateway_queueing_delay'],
+                            'cluster' : delay_profile['cluster_queueing_delay'], },
       },
   }
   rsu_info_list = json.loads(request.form['rsu_list'])
@@ -71,6 +83,8 @@ def get_average_speeds(request, unique_id=None):
   origin_tasks = filter(is_originator_task, task_graph)
 
   for task in origin_tasks:
+    data_size = len(str(task_graph)) + len(str(task['ref_id'])) + len(str(params))
+    time.sleep( calculate_delay(data_size, params['delay_profile']) )
     task_args = (mpq, task_graph, task['ref_id'], params)
     p = multiprocessing.Process(target=enqueue_task, args=task_args)
 
@@ -116,6 +130,19 @@ def get_average_speeds(request, unique_id=None):
 ###
 ##    S0002: Utility Functions
 ###
+def calculate_delay(data_size, delay_profile):
+    print("Calculating gateway delay...", end='')
+    data_tx_delay = ((data_size * 8) / delay_profile['tx_rate']['gateway']) + \
+                    ((data_size * 8) / delay_profile['tx_rate']['cluster'])
+    data_prop_delay = (delay_profile['link_length']['gateway'] / delay_profile['prop_speed']['gateway']) + \
+                      (delay_profile['link_length']['cluster'] / delay_profile['prop_speed']['cluster'])
+    total_delay = data_tx_delay + data_prop_delay + \
+                  delay_profile['proc_delay']['gateway'] + delay_profile['proc_delay']['cluster'] + \
+                  delay_profile['queue_delay']['gateway'] + delay_profile['queue_delay']['cluster']
+
+    print("{} secs".format(total_delay))
+    return total_delay
+
 def get_rsu_list():
     rsu_list = []
 

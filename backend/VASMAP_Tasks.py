@@ -7,6 +7,7 @@ import json
 import requests
 import pandas as pd
 import numpy as np
+import time
 import datetime as dt
 import multiprocessing
 
@@ -14,44 +15,30 @@ from rq import Queue, Connection
 from common.defs import *
 from common import redis_tools
 from common import metas as meta_tools
-from common.mqtt_tools import MqttLog
 from tools.backend_task import BackendTask
 
 ###
 ##    S0001: Main Functions
 ###
 def collect_rsu_data(task_graph, reference_id, params):
-  collect_task = CollectTask()
+  collect_task = CollectTask(task_graph, reference_id, params)
   return collect_task.run(task_graph, reference_id, params)
 
 def collect_per_rsu_data(task_graph, reference_id, params):
-  collect_per_rsu_task = CollectPerRsuTask()
+  collect_per_rsu_task = CollectPerRsuTask(task_graph, reference_id, params)
   return collect_per_rsu_task.run(task_graph, reference_id, params)
 
 def average_by_rsu(task_graph, reference_id, params):
-  average_by_rsu_task = AverageByRsuTask()
+  average_by_rsu_task = AverageByRsuTask(task_graph, reference_id, params)
   return average_by_rsu_task.run(task_graph, reference_id, params)
 
 def aggregate_average_speeds(task_graph, reference_id, params):
-  aggregate_speeds_task = AggregateAverageSpeedsTask()
+  aggregate_speeds_task = AggregateAverageSpeedsTask(task_graph, reference_id, params)
   return aggregate_speeds_task.run(task_graph, reference_id, params)
 
 ###
 ##    S0002: Utility Functions
 ###
-def enqueue_task(queue, task_graph, ref_id, params):
-  with Connection(redis.from_url(REDIS_URL)):
-    q = Queue(task_graph[ref_id]['node_id'])
-
-    task = q.enqueue(task_graph[ref_id]['func'], task_graph, ref_id, params)
-
-  queue.put(task.get_id())
-  return
-
-def error_result(message):
-  return { 'unique_id': unique_id, 
-           'metas' : { 'status' : 'failed', 'message' : message }  }
-
 def query_influx_db(start, end, fields="*",
                                 influx_db='IFoT-GW2',
                                 influx_ret_policy='autogen',
@@ -89,12 +76,90 @@ def query_influx_db(start, end, fields="*",
 ###
 ##    S0004: VASMAP Task Classes
 ###
-class CollectTask(BackendTask):
-  def __init__(self):
-    BackendTask.__init__(self, 'collection', task_func=self.do_task)
+class DelayCapableBackendTask(BackendTask):
+  def __init__( self, task_type,
+                      delay_profile=None,
+                      task_func=None,
+                      pre_exec_func=None,
+                      post_exec_func=None ):
+
+    self.gateway_tx_delay = float(delay_profile['tx_rate']['gateway'])
+    self.cluster_tx_delay = float(delay_profile['tx_rate']['cluster'])
+    self.gateway_link_len = float(delay_profile['link_length']['gateway'])
+    self.cluster_link_len = float(delay_profile['link_length']['cluster'])
+    self.gateway_prop_spd = float(delay_profile['prop_speed']['gateway'])
+    self.cluster_prop_spd = float(delay_profile['prop_speed']['cluster'])
+    self.gateway_misc_delay = float(delay_profile['proc_delay']['gateway']) + \
+                              float(delay_profile['queue_delay']['gateway'])
+    self.cluster_misc_delay = float(delay_profile['proc_delay']['cluster']) + \
+                              float(delay_profile['queue_delay']['cluster'])
+
+    BackendTask.__init__(self, task_type, 
+                               task_func=task_func,
+                               pre_exec_func=pre_exec_func,
+                               post_exec_func=post_exec_func)
     return
 
-  def do_task(self, task_graph, reference_id, params, node_id=None):
+  def calculate_cluster_delay(self, data_size):
+    print("Calculating cluster delay...", end='')
+    data_tx_delay = ((data_size * 8) / self.cluster_tx_delay)
+    data_prop_delay = (self.cluster_link_len / self.cluster_prop_spd)
+    total_delay = 2 * (data_tx_delay + data_prop_delay + self.cluster_misc_delay)
+    print("{} secs".format(total_delay))
+    return total_delay
+
+  def calculate_gateway_delay(self, data_size):
+    print("Calculating gateway delay...", end='')
+    data_tx_delay = ((data_size * 8) / self.gateway_tx_delay) + ((data_size * 8) / self.cluster_tx_delay)
+    data_prop_delay = (self.gateway_link_len / self.gateway_prop_spd) + (self.cluster_link_len / self.cluster_prop_spd)
+    total_delay = data_tx_delay + data_prop_delay + self.gateway_misc_delay + self.cluster_misc_delay
+    print("{} secs".format(total_delay))
+    return total_delay
+
+  def enqueue_task(self, mp_queue, task_graph, ref_id, params, depends_on=None):
+    # Factor in the delays
+    data_size = len(str(task_graph)) + len(str(ref_id)) + len(str(params))
+    time.sleep( self.calculate_cluster_delay(data_size) )
+
+    # Enqueue the task
+    with Connection(redis.from_url(REDIS_URL)):
+      q = Queue(task_graph[ref_id]['node_id'])
+
+      task = q.enqueue(task_graph[ref_id]['func'], task_graph, ref_id, params)
+
+    if mp_queue:
+      mp_queue.put(task.get_id())
+
+    return task
+
+  def log_event(self, event_type, status):
+    # Factor in the delays
+    data_size = len(str(event_type)) + len(str(status))
+    time.sleep( self.calculate_gateway_delay(data_size) )
+
+    return self.mqtt_log.event(event_type, status)
+
+  def log_exec_time(self, event_type, start, end):
+    # Factor in the delays
+    data_size = len(str(event_type)) + len(str(start)) + len(str(end))
+    time.sleep( self.calculate_gateway_delay(data_size) )
+
+    return self.mqtt_log.exec_time(event_type, start, end)
+
+  def log_results(self, results, subtype=None, metas=None):
+    # Factor in the delays
+    data_size = len(str(results)) + len(str(subtype)) + len(str(metas))
+    time.sleep( self.calculate_gateway_delay(data_size) )
+
+    return self.mqtt_log.results(results, subtype=subtype, metas=metas)
+
+class CollectTask(DelayCapableBackendTask):
+  def __init__(self, task_graph, reference_id, params):
+    DelayCapableBackendTask.__init__(self, 'collection', delay_profile=params['delay_profile'],
+                                                         task_func=self.do_task)
+    return
+
+  def do_task(self, task_graph, reference_id, params, node_id=None, task_attr=None):
     # Resolve parameters
     db_info       = params['db_info']
     start_time    = params['start_time']
@@ -116,7 +181,7 @@ class CollectTask(BackendTask):
     df = pd.DataFrame(values, columns=columns)
 
     all_dest_nodes = []
-    for dest_info in self.task_info['dest']: # TODO
+    for dest_info in task_attr.task_info['dest']: # TODO
       for dest_node in dest_info['nodes']:
           if dest_node in all_dest_nodes:
               continue
@@ -124,14 +189,15 @@ class CollectTask(BackendTask):
           all_dest_nodes.append(dest_node)
 
     node_df = df[df['rsu_id'].isin(all_dest_nodes)]
-    params = {
+    node_params = {
       'columns' : list(node_df.columns.values),
       'values'  : list(node_df.values),
       'db_info' : db_info,
+      'delay_profile' : params['delay_profile'],
     }
 
     dest_node_data_list = []
-    for dest_info in self.task_info['dest']: # TODO
+    for dest_info in task_attr.task_info['dest']: # TODO
       for dest_node in dest_info['nodes']:
           # Get the matching task in the task graph
           dest_task = None
@@ -148,7 +214,7 @@ class CollectTask(BackendTask):
 
           dest_node_data = {
             'data' : dest_task,
-            'params' : params,
+            'params' : node_params,
           }
           dest_node_data_list.append(dest_node_data)
 
@@ -158,7 +224,7 @@ class CollectTask(BackendTask):
     processes = []
     for dest_node in dest_node_data_list:
       task_args = (mpq, task_graph, dest_node['data']['ref_id'], dest_node['params'])
-      p = multiprocessing.Process(target=enqueue_task, args=task_args)
+      p = multiprocessing.Process(target=self.enqueue_task, args=task_args)
       processes.append(p)
       p.start()
 
@@ -168,12 +234,13 @@ class CollectTask(BackendTask):
     return { 'output' : [ d['data'] for d in dest_node_data_list ], 
              'outsize' : len(dest_node_data_list), 'metas' : {} }
 
-class CollectPerRsuTask(BackendTask):
-  def __init__(self):
-    BackendTask.__init__(self, 'collection', task_func=self.do_task)
+class CollectPerRsuTask(DelayCapableBackendTask):
+  def __init__(self, task_graph, reference_id, params):
+    DelayCapableBackendTask.__init__(self, 'collection', delay_profile=params['delay_profile'],
+                                                         task_func=self.do_task)
     return
 
-  def do_task(self, task_graph, reference_id, params, node_id=None):
+  def do_task(self, task_graph, reference_id, params, node_id=None, task_attr=None):
     # Resolve parameters
     db_info       = params['db_info']
     start_time    = params['start_time']
@@ -228,7 +295,7 @@ class CollectPerRsuTask(BackendTask):
 
     for dest_node in dest_node_data_list:
       task_args = (mpq, task_graph, dest_node['data']['ref_id'], dest_node['params'])
-      p = multiprocessing.Process(target=enqueue_task, args=task_args)
+      p = multiprocessing.Process(target=self.enqueue_task, args=task_args)
       processes.append(p)
       p.start()
 
@@ -237,12 +304,14 @@ class CollectPerRsuTask(BackendTask):
 
     return { 'output' : dest_node_data_list, 'outsize' : len(dest_node_data_list), 'metas' : {} }
 
-class AverageByRsuTask(BackendTask):
-  def __init__(self):
-    BackendTask.__init__(self, 'processing', task_func=self.do_task, post_exec_func=self.do_post_task)
+class AverageByRsuTask(DelayCapableBackendTask):
+  def __init__(self, task_graph, reference_id, params):
+    DelayCapableBackendTask.__init__(self, 'processing', delay_profile=params['delay_profile'],
+                                                         task_func=self.do_task, 
+                                                         post_exec_func=self.do_post_task)
     return
 
-  def do_task(self, task_graph, reference_id, params, node_id=None):
+  def do_task(self, task_graph, reference_id, params, node_id=None, task_attr=None):
     # Resolve parameters
     db_info       = params['db_info']
     columns       = params['columns']
@@ -261,7 +330,7 @@ class AverageByRsuTask(BackendTask):
 
     return { 'output' : results, 'outsize' : len(results['aggregated_speeds']), 'metas' : {} }
 
-  def do_post_task(self, task_graph, reference_id, params, node_id=None, metas=None):
+  def do_post_task(self, task_graph, reference_id, params, node_id=None, metas=None, task_attr=None):
     extra_metas = {}
 
     # Resolve parameters
@@ -274,12 +343,12 @@ class AverageByRsuTask(BackendTask):
     #TODO: Check if result is not yet done before aggregation
     #http://python-rq.org/docs/ --> need to wait a while until the worker is finished
     if task_count == done_task_count:
-      redis_tools.setRedisKV(redis_conn, self.unique_id, "finished")
+      redis_tools.setRedisKV(redis_conn, task_attr.unique_id, "finished")
 
       # Retrieve the next task
       next_tasks = []
       for t in task_graph:
-        dest_tasks = self.task_info['dest'] # TODO
+        dest_tasks = task_attr.task_info['dest'] # TODO
 
         is_next_task = False
         for dt in dest_tasks:
@@ -300,43 +369,46 @@ class AverageByRsuTask(BackendTask):
           next_tasks.append(t)
 
       with Connection(redis_conn):
+        node_params = { 'delay_profile' : params['delay_profile'] }
         for next_task in next_tasks:
           #Maybe add a differnetname?
-          q = Queue(next_task['node_id'])
-          t = q.enqueue(next_task['func'], task_graph, next_task['ref_id'], None, depends_on=self.job.id) #job is this current job
+          # q = Queue(next_task['node_id'])
+          # t = q.enqueue(next_task['func'], task_graph, next_task['ref_id'], None, depends_on=task_attr.job.id) #job is this current job
+          t = self.enqueue_task(None, task_graph, next_task['ref_id'], node_params, depends_on=task_attr.job.id)
           extra_metas['agg_task_id'] = t.id
 
     return { 'metas' : extra_metas }
 
-class AggregateAverageSpeedsTask(BackendTask):
-  def __init__(self):
-    BackendTask.__init__(self, 'aggregation', task_func=self.do_task)
+class AggregateAverageSpeedsTask(DelayCapableBackendTask):
+  def __init__(self, task_graph, reference_id, params):
+    DelayCapableBackendTask.__init__(self, 'aggregation', delay_profile=params['delay_profile'],
+                                                          task_func=self.do_task)
     return
 
-  def do_task(self, task_graph, reference_id, params, node_id=None):
+  def do_task(self, task_graph, reference_id, params, node_id=None, task_attr=None):
     # TODO Get status of the task processing
     redis_conn = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, password="", decode_responses=True)
-    status = redis_tools.getRedisV(redis_conn, self.unique_id)
+    status = redis_tools.getRedisV(redis_conn, task_attr.unique_id)
 
     if status != "finished":
       return {'last_job' : True, 'result' : None }
 
     with Connection(redis.from_url(REDIS_URL)):
       # Get a list of task ids
-      task_id_list_all = redis_tools.getListK(redis_conn, R_TASKS_LIST.format(self.unique_id))
+      task_id_list_all = redis_tools.getListK(redis_conn, R_TASKS_LIST.format(task_attr.unique_id))
 
       # Resolve information about each task given their task ids
       task_list = []
       for task_id in task_id_list_all:
-        json_task_info = redis_tools.getRedisV(redis_conn, R_TASK_INFO.format(self.unique_id, task_id))
+        json_task_info = redis_tools.getRedisV(redis_conn, R_TASK_INFO.format(task_attr.unique_id, task_id))
         finished_task = json.loads(json_task_info)
 
         # Check if the finished task directly targets this node
         for dest_task in finished_task['dest']: # TODO
 
-          if ( (self.task_info['node_id'] in dest_task['nodes']) or ('default' in dest_task['nodes']) ) and \
-             dest_task['type'] == self.task_info['type'] and \
-             dest_task['order'] == self.task_info['order']:
+          if ( (task_attr.task_info['node_id'] in dest_task['nodes']) or ('default' in dest_task['nodes']) ) and \
+             dest_task['type'] == task_attr.task_info['type'] and \
+             dest_task['order'] == task_attr.task_info['order']:
 
             task_list.append(finished_task)
             break
@@ -371,7 +443,7 @@ class AggregateAverageSpeedsTask(BackendTask):
         agg_result[rsu_id] = speed_info['speed'] / speed_info['count']
 
       d = { 'result': agg_result,
-            'unique_id': self.unique_id,
+            'unique_id': task_attr.unique_id,
             # 'done_task_count': done_task_count,
             'node_task_id_list': task_to_queue_list }
 

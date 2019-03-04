@@ -28,6 +28,7 @@ class MqttLog():
   def msg(self, msg, subtopic=None):
     client = self.get_client()
 
+    print("Publishing: {}".format(msg))
     for t in self.tag_list:
       topic = t
       if subtopic != None:

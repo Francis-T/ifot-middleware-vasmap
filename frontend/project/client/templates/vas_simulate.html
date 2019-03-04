@@ -12,6 +12,9 @@
 <body>
 <div class="container">
   <div class="d-none">
+    {% if strategy %}
+    <input type="hidden" id="v_strategy" value="{{ strategy }}">
+    {% endif %}
     {% if rsu_list %}
     <input type="hidden" id="v_rsu_list" value="{{ rsu_list }}">
     {% endif %}
@@ -20,6 +23,9 @@
     {% endif %}
     {% if svc_params %}
     <input type="hidden" id="v_svc_params" value="{{ svc_params }}">
+    {% endif %}
+    {% if delay_profile %}
+    <input type="hidden" id="v_delay_profile" value="{{ delay_profile }}">
     {% endif %}
   </div>
   <div class="row"><h3>Vehicle Simulation Demo</h3></div>

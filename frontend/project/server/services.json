@@ -1,0 +1,10 @@
+[
+  { "name" : "vas", 
+    "desc" : "...", 
+    "front_end" : { "path" : "project.server.main.vas", 
+                    "url_pref" : "/" },
+    "api"       : { "path" : "project.server.api.vas", 
+                    "url_pref" : "/api/vas" }
+  }
+]
+

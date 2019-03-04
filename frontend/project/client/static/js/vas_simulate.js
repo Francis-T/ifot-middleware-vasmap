@@ -1,3 +1,4 @@
+var strategy = "";
 var rsu_list = null;
 var cluster_data = null;
 var svc_params = null;
@@ -19,6 +20,7 @@ function initializeWindow() {
   });
 
   socket.on('results', function(data) {
+    console.log(data);
     result_data = JSON.parse(data);
 
     console.log(`Result received: ${result_data.type} ${result_data.subtype}`);
@@ -41,14 +43,19 @@ function initializeWindow() {
       $("#result-progress").addClass("border");
     }
 
+    console.log("Finished");
     return;
   });
 
   console.log("Test");
+  
+  strategy      = JSON.parse( $("#v_strategy").val() );
   rsu_list      = JSON.parse( $("#v_rsu_list").val() );
   cluster_data  = JSON.parse( $("#v_cluster_data").val() );
   svc_params    = JSON.parse( $("#v_svc_params").val() );
+  delay_profile = JSON.parse( $("#v_delay_profile").val() );
 
+  console.log(strategy);
   console.log(rsu_list);
   console.log(cluster_data);
   console.log(svc_params);
@@ -70,6 +77,8 @@ function requestAverageSpeeds() {
     request_data.append('end_time'        , svc_params.end_time );
     request_data.append('rsu_list'        , JSON.stringify(rsu_list) );
     request_data.append('cluster_data'    , JSON.stringify(cluster_data) );
+    request_data.append('delay_profile'   , JSON.stringify(delay_profile) );
+    request_data.append('strategy'        , strategy );
 
     $.ajax({
         url : "api/vas/get_average_speeds",
@@ -78,9 +87,9 @@ function requestAverageSpeeds() {
         contentType : false,
         processData : false,
         success : function(data) {
-            console.log(data);
             results = { 'topic' : data.response_object.unique_ID + '/results' };
             socket.emit('subscribe', results);
+            console.log(data);
             recvd_results = {};
 
             return;

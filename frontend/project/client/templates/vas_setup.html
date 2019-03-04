@@ -8,6 +8,7 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 
+    <script type="text/javascript" src="{{ url_for('static', filename='js/vas_setup.js')}}"></script>
     <script type="text/javascript" charset="utf-8">
     var socket = io.connect('http://' + document.domain + ':' + location.port);
 
@@ -21,6 +22,7 @@
     })
 
     function populate_js(form) {
+      console.log("test");
       var values = {};
       $.each($("form").serializeArray(), function (i, field) {
           values[field.name] = field.value;
@@ -29,26 +31,32 @@
       console.log(values['rows_of_data']);
       rows = values['rows_of_data'];
       socket.emit('function', {'data': 'populate', 'number_of_rows': rows});
+
+      return false;
     }
 
-    // $('#populate_form').submit(function () {
-    //   var values = {};
-    //   $.each($("#populate_form").serializeArray(), function (i, field) {
-    //       console.log(field.value);
-    //       values[field.name] = field.value;
-    //   });
+    $("#form-populate").submit( function() {
+      console.log("test");
+      var values = {};
+      $.each($("form").serializeArray(), function (i, field) {
+          values[field.name] = field.value;
+      });
 
-    //   console.log(values['rows_of_data']);
-    //   rows = values['rows_of_data'];
-    //   socket.emit('function', {'data': 'populate', 'number_of_rows': rows});
-    // });
+      // console.log(values['rows_of_data']);
+      // rows = values['rows_of_data'];
+      // socket.emit('function', {'data': 'populate', 'number_of_rows': rows});
 
-    // var values = {};
-    // $.each($('#populate_form').serializeArray(), function(i, field) {
-    //     values[field.name] = field.value;
-    //     console.log(field.value);
-    // });
+      return false;
+    });
+
     </script>
+    <style>
+      .badge {
+        height: 100%;
+        margin-top: 3px;
+        margin-left: 10px;
+      }
+    </style>
 
   </head>
   <body>
@@ -59,7 +67,7 @@
           <div class="row"><h4>Setup</h4></div>
           <div class="row ml-1">
             {{ form.csrf_token }}
-            <form method="POST" action="{{ url_for('main.vas_setup') }}">
+            <form method="POST" action="{{ url_for('vas.vas_setup') }}">
               {{ form.number_of_workers.label }} (1 - {{rsu_count}}) {{ form.number_of_workers }}
               <br>
               {{ form.number_of_masters.label }} (1 - {{rsu_count}}) {{ form.number_of_masters }}
@@ -68,6 +76,7 @@
               <p><input name="setup" type=submit value="Setup">
             </form>
           </div>
+
           <div class="row"><h4>Populate InfluxDBs</h4></div>
           <div class="row ml-1">
             {% if rsu_count == 0 %}
@@ -77,21 +86,59 @@
           </div>
           <div class="row ml-1">
             {{ populate.csrf_token }}
-            <!-- <form method="POST" action="{{ url_for('main.vas_setup') }}"> -->
-            <form onsubmit="return populate_js(this);">
+            <!-- <form method="POST" action="{{ url_for('vas.vas_setup') }}"> -->
+            <form id="form-populate" action="" method="POST">
             <!-- <form id="populate_form"> -->
               {{ populate.rows_of_data.label }} {{ populate.rows_of_data }}
               {{ populate.hidden_tag() }}
-              <p><input name="populate" type=submit value="Populate">
+              <p><input name="populate" class="submit" type="submit" value="Populate">
             </form>
           </div>
         </div>
 
         <div class="col-sm-8">
-          <div class="row"><h4>Simulate</h4></div>
           {% if json_rsu_list %}
-          <form method="POST" action="{{ url_for('main.vas_simulate') }}">
-            <input name="rsu_cluster_data" type="hidden" value="{{ json_rsu_list }}">
+          <div class="row"><h4>Simulate</h4></div>
+          <form method="POST" action="{{ url_for('vas.vas_simulate') }}">
+            <div class="row ml-1">
+              <h5>Delay Profile</h5>
+              <span onclick="togglePanel('delay-panel');" class="badge badge-secondary">Toggle</span>
+            </div>
+            <div id="delay-panel" class="ml-3">
+              <div class="row ml-1">
+                <h6>Cluster</h6>
+                <span onclick="togglePanel('cluster-delay-panel');" class="badge badge-secondary">Toggle</span>
+              </div>
+              <div id="cluster-delay-panel">
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.cluster_tx_rate.label }}</div><div class="col-sm-4">{{ dp_form.cluster_tx_rate(class_='dp-form-input') }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.cluster_prop_speed.label }}</div><div class="col-sm-4">{{ dp_form.cluster_prop_speed }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.cluster_link_length.label }}</div><div class="col-sm-4">{{ dp_form.cluster_link_length }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.cluster_proc_delay.label }}</div><div class="col-sm-4">{{ dp_form.cluster_proc_delay }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.cluster_queueing_delay.label }}</div><div class="col-sm-4">{{ dp_form.cluster_queueing_delay }}</div></div>
+              </div>
+
+              <div class="row ml-1">
+                <h6>Gateway</h6>
+                <span onclick="togglePanel('gateway-delay-panel');" class="badge badge-secondary">Toggle</span>
+              </div>
+              <div id="gateway-delay-panel">
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.gateway_tx_rate.label }}</div><div class="col-sm-4">{{ dp_form.gateway_tx_rate }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.gateway_prop_speed.label }}</div><div class="col-sm-4">{{ dp_form.gateway_prop_speed }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.gateway_link_length.label }}</div><div class="col-sm-4">{{ dp_form.gateway_link_length }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.gateway_proc_delay.label }}</div><div class="col-sm-4">{{ dp_form.gateway_proc_delay }}</div></div>
+                <div class="row ml-1"><div class="col-sm-8">{{ dp_form.gateway_queueing_delay.label }}</div><div class="col-sm-4">{{ dp_form.gateway_queueing_delay }}</div></div>
+              </div>
+            </div>
+            <div class="row ml-1">
+              <h5>Strategy</h5>
+              <span onclick="togglePanel('strategy-panel');" class="badge badge-secondary">Toggle</span>
+            </div>
+            <div id="strategy-panel" class="ml-3">
+              <input id="rbtn_opt_1" type="radio" name="strategy" value="single-collector">Use one collector node for all<br/>
+              <input id="rbtn_opt_2" type="radio" name="strategy" value="handle-own-data">Let each node collect and process its own data<br/>
+              <input id="rbtn_opt_3" type="radio" name="strategy" value="clustered-collection" checked>Use one collector node per cluster<br/>
+              <input name="rsu_cluster_data" type="hidden" value="{{ json_rsu_list }}">
+            </div>
             <input type="submit" value="Simulate">
           </form>
           {% endif %}

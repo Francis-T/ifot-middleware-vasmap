@@ -10,7 +10,7 @@ from flask import Flask, Blueprint, request, jsonify, current_app
 
 from ...common.defs import *
 from ...common import metas
-from ..services import generic, vas, iris
+from ..services import generic, iris
 
 api_blueprint = Blueprint('api', __name__,)
 
@@ -30,34 +30,7 @@ def iris_dist_process():
   return forward_request(iris.dist_process, request)
 
 ###
-##  SEC0002: Vehicle Average Speed service API Functions
-###
-@api_blueprint.route('/vas/get_average_speeds', methods=['POST'])
-def get_average_speeds():
-  return forward_request(vas.get_average_speeds, request)
-
-@api_blueprint.route('/vas/request_rsu_list', methods=['GET'])
-def request_rsu_list():
-  return jsonify(vas.get_rsu_list())
-
-@api_blueprint.route('/vas/get_last_task_graph', methods=['GET'])
-def request_last_task_graph():
-    task_graph = None
-    with open('vas_task_graph.json', 'r') as task_graph_file:
-        task_graph = json.load(task_graph_file)
-
-    #return send_from_directory('.', 'vas_task_graph.json')
-    return jsonify(task_graph), 200
-
-@api_blueprint.route('/run_service', methods=['GET'])
-def run_service():
-    req         = request.get_json(force=True)
-    params      = req['params']
-    task_graph  = req['task_graph']
-    return call_service(generic.run_task_graph, params, task_graph)
-
-###
-##  SEC0003: Utility API Functions
+##  SEC0002: Utility API Functions
 ###
 @api_blueprint.route('/get_exec_times', methods=['GET', 'POST'])
 def get_exec_times():
@@ -72,8 +45,15 @@ def get_exec_time(unique_id):
   data['exec_time_logs'] = { unique_id : metas.get_exec_time_log(unique_id) }
   return jsonify(data)
 
+@api_blueprint.route('/run_service', methods=['GET'])
+def run_service():
+    req         = request.get_json(force=True)
+    params      = req['params']
+    task_graph  = req['task_graph']
+    return call_service(generic.run_task_graph, params, task_graph)
+
 ###
-##  SEC0004: IFoT Middleware Service Management Utility Functions
+##  SEC0003: IFoT Middleware Service Management Utility Functions
 ###
 def call_service(service_func, params, task_graph):
   # Execute the request
