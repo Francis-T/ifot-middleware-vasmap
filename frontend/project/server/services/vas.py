@@ -143,6 +143,34 @@ def calculate_delay(data_size, delay_profile):
     print("{} secs".format(total_delay))
     return total_delay
 
+def get_data_counts():
+    rsu_data_counts = {}
+
+    try:
+      start_time  = 0
+      end_time    = int(time.time() * 1000000000)
+
+      resp = query_tools.query_influx_db(start_time, end_time, 
+                                         fields='"rsu_id"',     
+                                         influx_db='rsu_speed', 
+                                         influx_meas='rsu_speeds')
+
+      resp_data =  json.loads(resp.text)
+      raw_resp_data = resp_data['results'][0]['series'][0]['values'] 
+
+      for row in raw_resp_data:
+        rsu_id = row[1]
+
+        if not rsu_id in rsu_data_counts:
+            rsu_data_counts[ rsu_id ] = 0
+
+        rsu_data_counts[ rsu_id ] += 1
+
+    except Exception as e:
+      rsu_data_counts = {}
+
+    return rsu_data_counts
+
 def get_rsu_list():
     rsu_list = []
 

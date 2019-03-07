@@ -21,6 +21,7 @@ def initialize_query(total, count_suffix=NODE_COUNT, done_count_suffix=DONE_NODE
 
 #TODO: Influx db client as input param
 def query_influx_db(start, end, fields="*",
+                                conditions=None,
                                 influx_db='IFoT-GW2',
                                 influx_ret_policy='autogen',
                                 influx_meas='IFoT-GW2-Meas',
@@ -37,6 +38,10 @@ def query_influx_db(start, end, fields="*",
 
     source = '"{}"."{}"."{}"'.format(influx_db, influx_ret_policy, influx_meas)
     where  = 'WHERE time >= {} AND time <= {}'.format(start, end)
+    if conditions:
+        for c in conditions:
+            where += ' AND {}'.format(c)
+
     query = "SELECT {} from {} {}".format(fields, source, where)
 
     payload = {

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+  <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vas_sysconfig.js') }}"></script>
+</head>
+<body>
+<div class="container">
+  <div class="d-none">
+    {% if strategy %}
+    <input type="hidden" id="v_strategy" value="{{ strategy }}">
+    {% endif %}
+    {% if rsu_list %}
+    <input type="hidden" id="v_rsu_list" value="{{ rsu_list }}">
+    {% endif %}
+    {% if cluster_data %}
+    <input type="hidden" id="v_cluster_data" value="{{ cluster_data }}">
+    {% endif %}
+    {% if svc_params %}
+    <input type="hidden" id="v_svc_params" value="{{ svc_params }}">
+    {% endif %}
+    {% if delay_profile %}
+    <input type="hidden" id="v_delay_profile" value="{{ delay_profile }}">
+    {% endif %}
+  </div>
+  <div class="row"><h3>Vehicle Simulation Demo</h3></div>
+  <div class="row mb-3 p-3 border">
+    <div class="col-sm-12">
+      <h5 class="row">System Configuration</h5>
+      <div class="row mb-2"><a href="{{ url_for('vas.vas_setup') }}">Return to Main Page</a></div>
+      <div class="row mb-2">
+        <button class="btn btn-outline-dark mx-1" onclick="togglePanel('generate-rsu-panel')">Generate RSUs</button>
+        <button class="btn btn-outline-dark mx-1" onclick="togglePanel('add-rsu-panel')" disabled>Add RSU</button>
+        <button class="btn btn-outline-dark mx-1" onclick="clearRsus()">Delete all RSUs</button>
+        <button class="btn btn-outline-dark mx-1" onclick="togglePanel('generate-rsu-data-panel')">Generate Data</button>
+        <button class="btn btn-outline-dark mx-1" onclick="clearRsuData()">Clear RSU data</button>
+      </div>
+      <div id="generate-rsu-panel" class="row">
+        <div class="col-sm-12 p-3 border">
+          <div class><h6>Enter RSU generation parameters</h6></div>
+          <form action="upload_rsu_file" method="POST" enctype="multipart/form-data">
+          <div class="row ml-1">
+            <div class="col-sm-2">{{ generate_rsu_form.rsu_file.label }}</div>
+            <div class="col-sm-3">{{ generate_rsu_form.rsu_file }}</div>
+          </div>
+          <div class="row ml-1">
+            <div class="col-sm-3"><a href="{{ url_for('vas.get_rsu_list') }}">Get existing RSU list...</a></div>
+          </div>
+          <div class="row ml-1">{{ generate_rsu_form.submit }}</div>
+          </form>
+        </div>
+      </div>
+      <div id="add-rsu-panel" class="row">
+        <div class="col-sm-12 p-3 border">
+          <div class><h6>Enter new RSU information</h6></div>
+          <form action="" method="POST">
+          <div class="row ml-1"><div class="col-sm-2">{{ add_rsu_form.rsu_id.label }}</div><div class="col-sm-2">{{ add_rsu_form.rsu_id }}</div></div>
+          <div class="row ml-1"><div class="col-sm-2">{{ add_rsu_form.lat.label }}</div><div class="col-sm-2">{{ add_rsu_form.lat }}</div></div>
+          <div class="row ml-1"><div class="col-sm-2">{{ add_rsu_form.lon.label }}</div><div class="col-sm-2">{{ add_rsu_form.lon }}</div></div>
+          <div class="row ml-1">{{ add_rsu_form.submit }}</div>
+          </form>
+        </div>
+      </div>
+      <div id="generate-rsu-data-panel" class="row">
+        <div class="col-sm-12 p-3 border">
+          <div class><h6>Enter RSU data generation parameters</h6></div>
+          <form id="generate-rsu-data-form" action="{{ url_for('vas.vas_generate_speed_data') }}" method="POST">
+          <input id="v_generate_data_rsu_list" name="generate_data_rsu_list" type="hidden" value="">
+          <div class="row ml-1"><div class="col-sm-3">{{ generate_rsu_data_form.data_count.label }}</div><div class="col-sm-2">{{ generate_rsu_data_form.data_count }}</div></div>
+          <div class="row ml-1">{{ generate_rsu_data_form.submit }}</div>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <table id="tbl_rsu_info_1" class="col-sm-5 mx-2">
+          <thead>
+            <th><input id="tbl-rsu-info-1-cb" type="checkbox"></th>
+            <th>RSU ID</th>
+            <th>LAT</th>
+            <th>LON</th>
+            <th>DATA COUNT</th>
+          </thead>
+          <tbody id="tbl_rsu_info_1_body">
+            {% for rsu in rsu_lists[0] %}
+            <tr>
+              <td><input id="{{ rsu.rsu_id|lower }}-cb" type="checkbox"></td>
+              <td>{{ rsu.rsu_id }}</td>
+              <td>{{ rsu.lat }}</td>
+              <td>{{ rsu.lon }}</td>
+              <td>{{ rsu.data_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <table id="tbl_rsu_info_2" class="col-sm-5 mx-2">
+          <thead>
+            <th><input id="tbl-rsu-info-2-cb" type="checkbox"></th>
+            <th>RSU ID</th>
+            <th>LAT</th>
+            <th>LON</th>
+            <th>DATA COUNT</th>
+          </thead>
+          <tbody id="tbl_rsu_info_2_body">
+            {% for rsu in rsu_lists[1] %}
+            <tr>
+              <td><input id="{{ rsu.rsu_id|lower }}-cb" type="checkbox"></td>
+              <td>{{ rsu.rsu_id }}</td>
+              <td>{{ rsu.lat }}</td>
+              <td>{{ rsu.lon }}</td>
+              <td>{{ rsu.data_count }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+

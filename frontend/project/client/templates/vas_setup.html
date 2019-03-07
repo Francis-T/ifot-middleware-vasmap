@@ -67,24 +67,28 @@
           <div class="row"><h4>Setup</h4></div>
           <div class="row ml-1">
             {{ form.csrf_token }}
-            <form method="POST" action="{{ url_for('vas.vas_setup') }}">
+            <form id="simulation-setup-form" method="POST" action="{{ url_for('vas.vas_setup') }}">
+              <input id="v_rsu_count" type="hidden" value="{{ rsu_count }}">
               {{ form.number_of_workers.label }} (1 - {{rsu_count}}) {{ form.number_of_workers }}
               <br>
               {{ form.number_of_masters.label }} (1 - {{rsu_count}}) {{ form.number_of_masters }}
               <br>
               {{ form.hidden_tag() }}
+              <a href="{{ url_for('vas.vas_sysconfig') }}">More system configuration...</a>
+              <br>
+              <div class="message-display"></div>
               <p><input name="setup" type=submit value="Setup">
             </form>
           </div>
 
-          <div class="row"><h4>Populate InfluxDBs</h4></div>
-          <div class="row ml-1">
+          <div class="ro d-none"><h4>Populate InfluxDBs</h4></div>
+          <div class="row ml-1 d-none">
             {% if rsu_count == 0 %}
             <h6 class="text-danger">Warning: No RSU data available. Please populate the DB.</h6>
             {% endif %}
             <h5>Status: <div id="Status"></div></h5>
           </div>
-          <div class="row ml-1">
+          <div class="row ml-1 d-none">
             {{ populate.csrf_token }}
             <!-- <form method="POST" action="{{ url_for('vas.vas_setup') }}"> -->
             <form id="form-populate" action="" method="POST">

@@ -61,6 +61,8 @@ def create_app(script_info=None):
       # Register API blueprint
       res = importlib.import_module(service['api']['path'])
       app.register_blueprint(res.api_blueprint, url_prefix=service['api']['url_pref'])
+
+      print("Loaded: {}".format(service))
     
     except Exception as e:
       print("ERROR: Failed to load {} service".format(service['name']))

@@ -14,6 +14,10 @@ api_blueprint = Blueprint('api/vas', __name__,)
 def get_average_speeds():
   return views.forward_request(vas.get_average_speeds, request)
 
+@api_blueprint.route('/request_data_counts', methods=['GET'])
+def request_data_counts():
+  return jsonify(vas.get_data_counts())
+
 @api_blueprint.route('/request_rsu_list', methods=['GET'])
 def request_rsu_list():
   return jsonify(vas.get_rsu_list())
